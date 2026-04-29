@@ -63,12 +63,14 @@ export const documentRoutes = new Elysia({ prefix: "/documents", tags: ["documen
         $createdAt: new Date().toISOString(),
       });
 
-      // Send signing request email to signer
-      await sendSigningRequest({
+      // Send signing request email to signer (non-blocking to prevent slowness)
+      sendSigningRequest({
         to: body.signerEmail,
         title: body.title,
         requesterEmail: body.requesterEmail,
         signingToken,
+      }).catch(err => {
+        console.error(`[BACKGROUND EMAIL ERROR]:`, err);
       });
 
       set.status = 201;

@@ -13,6 +13,10 @@ function createTransport() {
       user: Bun.env.SMTP_USER,
       pass: Bun.env.SMTP_PASS,
     },
+    // Fail fast if connection cannot be established
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,
+    socketTimeout: 20000,
   });
 }
 

@@ -84,12 +84,14 @@ export const signRoutes = new Elysia({ prefix: "/sign", tags: ["signatures"] })
         $id: row.id,
       });
 
-      // Notify requester
-      await sendSignedNotification({
+      // Notify requester (non-blocking)
+      sendSignedNotification({
         to: row.requester_email,
         title: row.title,
         signerEmail: row.signer_email,
         documentId: row.id,
+      }).catch(err => {
+        console.error(`[BACKGROUND EMAIL ERROR]:`, err);
       });
 
       return { message: "Document signed successfully", documentId: row.id };
