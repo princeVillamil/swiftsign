@@ -1,4 +1,4 @@
-import { apiClient } from "./client";
+import { apiClient, API_URL } from "./client";
 import type { Document, UploadDocumentPayload, SignDocumentPayload, SigningDocument } from "@/types";
 
 export const documentsApi = {
@@ -11,7 +11,7 @@ export const documentsApi = {
   getByToken: (token: string) =>
     apiClient.get<SigningDocument>(`/sign/${token}`),
 
-  pdfUrl: (token: string) => `/api/sign/${token}/pdf`,
+  pdfUrl: (token: string) => `${API_URL}/sign/${token}/pdf`,
 
   upload: (payload: UploadDocumentPayload) => {
     const form = new FormData();
@@ -25,7 +25,7 @@ export const documentsApi = {
     );
   },
 
-  downloadUrl: (id: string) => `/api/documents/${id}/download`,
+  downloadUrl: (id: string) => `${API_URL}/documents/${id}/download`,
 
   sign: (token: string, payload: SignDocumentPayload) =>
     apiClient.post(`/sign/${token}`, payload),
