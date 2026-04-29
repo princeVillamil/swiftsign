@@ -1,53 +1,39 @@
-import nodemailer from "nodemailer";
+async function sendMail(opts: { to: string; subject: string; html: string }) {
+  const apiKey = Bun.env.SMTP_PASS || Bun.env.RESEND_API_KEY;
+  const fromEmail = Bun.env.FROM_EMAIL ?? "onboarding@resend.dev";
 
-function createTransport() {
-  if (!Bun.env.SMTP_HOST) {
-    // Dev mode: log emails to console instead of sending
-    return null;
-  }
-  return nodemailer.createTransport({
-    host: Bun.env.SMTP_HOST,
-    port: Number(Bun.env.SMTP_PORT) || 587,
-    secure: Bun.env.SMTP_SECURE === "true",
-    auth: {
-      user: Bun.env.SMTP_USER,
-      pass: Bun.env.SMTP_PASS,
-    },
-    // Fail fast if connection cannot be established
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,
-    socketTimeout: 20000,
-  });
-}
-
-const transporter = createTransport();
-
-interface MailOptions {
-  to: string;
-  subject: string;
-  html: string;
-}
-
-async function sendMail(opts: MailOptions) {
-  if (!transporter) {
-    console.log("\n[DEV EMAIL]");
+  if (!apiKey || apiKey.includes("your_api_key")) {
+    console.log("\n[DEV EMAIL (No API Key)]");
     console.log(`To: ${opts.to}`);
     console.log(`Subject: ${opts.subject}`);
     console.log(`Body preview: ${opts.html.replace(/<[^>]+>/g, "").slice(0, 120)}\n`);
     return;
   }
-  
-  // Use Resend onboarding email as default to avoid 550 errors
-  const fromEmail = Bun.env.FROM_EMAIL ?? "onboarding@resend.dev";
-  
+
   try {
-    await transporter.sendMail({
-      from: `"SwiftSign" <${fromEmail}>`,
-      ...opts,
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        from: `SwiftSign <${fromEmail}>`,
+        to: [opts.to],
+        subject: opts.subject,
+        html: opts.html,
+      }),
     });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Resend API error: ${error}`);
+    }
+
+    const data = await response.json();
+    console.log(`[EMAIL SENT]: ${opts.to} (ID: ${data.id})`);
   } catch (err) {
     console.error(`[EMAIL ERROR]: Failed to send email to ${opts.to}`, err);
-    // DO NOT re-throw. We don't want an email failure to crash a successful signing process.
   }
 }
 

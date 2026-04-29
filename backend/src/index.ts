@@ -40,7 +40,7 @@ const app = new Elysia()
   .use(
     swagger({
       documentation: {
-        info: { title: "eSign API", version: "0.1.0" },
+        info: { title: "SwiftSign API", version: "0.1.0" },
         tags: [
           { name: "documents", description: "Document management" },
           { name: "signatures", description: "Signing flow" },
