@@ -1,6 +1,6 @@
 import { 
   ChevronDown, Plus, LayoutDashboard, Inbox, Send, FileText, 
-  Clock, Settings, Bell, Zap 
+  Clock, Settings, Bell, Zap, BookOpen 
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -10,6 +10,18 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const location = useLocation();
+
+  const getPageTitle = () => {
+    const path = location.pathname;
+    if (path === '/') return 'Dashboard';
+    if (path === '/dashboard') return 'Dashboard';
+    if (path === '/upload') return 'New Request';
+    if (path === '/help') return 'Documentation';
+    
+    // Capitalize last segment
+    const lastPart = path.split('/').pop() || '';
+    return lastPart.charAt(0).toUpperCase() + lastPart.slice(1);
+  };
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] font-sans text-slate-900 overflow-hidden">
@@ -39,28 +51,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Navigation Menu */}
         <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
-          <NavItem to="/dashboard" icon={FileText} label="Dashboard" active={location.pathname === '/'} />
-          {/* <NavItem to="/sent" icon={Send} label="Sent" active={location.pathname === '/sent'} />
-          <NavItem to="/history" icon={Clock} label="History" active={location.pathname === '/history'} />
+          <NavItem to="/dashboard" icon={FileText} label="Dashboard" active={location.pathname === '/dashboard'} />
           
-          <div className="my-4 border-t border-slate-100"></div> */}
-
-          {/* <NavItem to="/settings" icon={Settings} label="Settings" active={location.pathname === '/settings'} /> */}
+          <div className="my-4 border-t border-slate-100"></div>
+          
+          <NavItem to="/help" icon={BookOpen} label="Help & Docs" active={location.pathname === '/help'} />
         </nav>
 
-        {/* User Account Dropdown Can ADD LATER FOR DEMO NO NEED */}
-        {/* <div className="p-4 border-t border-slate-100 flex items-center justify-between hover:bg-slate-50 cursor-pointer transition-colors mt-auto">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center font-bold text-sm shadow-sm">
-              JS
-            </div>
-            <div>
-              <p className="text-sm font-bold text-slate-900 leading-none">Burner Acc</p>
-              <p className="text-xs text-slate-500 mt-1">Personal Dashboard</p>
-            </div>
-          </div>
-          <ChevronDown className="w-4 h-4 text-slate-400" />
-        </div> */}
+        {/* Footer Info */}
+        <div className="p-6 text-center">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">SwiftSign v1.0 Demo</p>
+        </div>
       </aside>
 
       {/* --- MAIN CONTENT AREA --- */}
@@ -70,11 +71,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-8 shrink-0 z-0 shadow-sm shadow-slate-100/50">
           <div className="flex items-center gap-2.5">
             <span className="text-slate-500 font-semibold tracking-tight">
-              {location.pathname === '/' ? 'Dashboard' : 
-               location.pathname.split('/').pop()?.charAt(0).toUpperCase()}{location.pathname.split('/').pop()?.slice(1)}
+              {getPageTitle()}
             </span>
           </div>
-          
         </header>
 
         {/* Page Content (Scrollable) */}

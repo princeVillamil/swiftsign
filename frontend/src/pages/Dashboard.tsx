@@ -1,4 +1,4 @@
-import { FileText, Download, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { FileText, Download, Clock, CheckCircle2, XCircle, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useDocuments } from "@/hooks/useDocuments";
 import { Badge } from "@/components/ui/Badge";
@@ -14,8 +14,10 @@ function DocumentCard({ doc }: { doc: Document }) {
     : Clock;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-5 flex items-start justify-between gap-4 shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-300 group">
-      
+    <Link 
+      to={`/documents/${doc.id}`}
+      className="bg-white rounded-2xl border border-slate-200 p-5 flex items-start justify-between gap-4 shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5 transition-all duration-300 group cursor-pointer"
+    >
       <div className="flex items-start gap-4">
         {/* Dynamic Icon Container with hover effects */}
         <div className="mt-0.5 w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-50 group-hover:border-blue-100 transition-colors">
@@ -23,7 +25,10 @@ function DocumentCard({ doc }: { doc: Document }) {
         </div>
         
         <div>
-          <p className="font-semibold text-slate-900 text-sm tracking-tight">{doc.title}</p>
+          <div className="flex items-center gap-2">
+            <p className="font-semibold text-slate-900 text-sm tracking-tight">{doc.title}</p>
+            <ChevronRight size={12} className="text-slate-300 group-hover:text-slate-400 group-hover:translate-x-0.5 transition-all" />
+          </div>
           <p className="text-xs font-medium text-slate-500 mt-1">
             Signer: <span className="text-slate-700">{doc.signerEmail}</span>
           </p>
@@ -39,18 +44,12 @@ function DocumentCard({ doc }: { doc: Document }) {
         <Badge status={doc.status} />
         
         {doc.status === "signed" && (
-          <a
-            href={documentsApi.downloadUrl(doc.id)}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-blue-700 hover:bg-blue-50 px-2.5 py-1.5 rounded-lg transition-colors"
-          >
-            <Download size={14} />
-            Download
-          </a>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100">Ready</span>
+          </div>
         )}
       </div>
-    </div>
+    </Link>
   );
 }
 

@@ -6,6 +6,8 @@ import { Sign } from "@/pages/Sign";
 import { Success } from "@/pages/Success";
 import Home from "./pages/Home";
 
+import Help from "./pages/Help";
+import DocumentPreview from "./pages/DocumentPreview";
 
 function App() {
   return (
@@ -16,7 +18,7 @@ function App() {
       
       {/* Pages with sidebar layout */}
       <Route path="/success" element={
-        <Success />
+        <DashboardLayout><Success /></DashboardLayout>
       } />
       <Route path="/dashboard" element={
         <DashboardLayout><Dashboard /></DashboardLayout>
@@ -24,7 +26,12 @@ function App() {
       <Route path="/upload" element={
         <DashboardLayout><Upload /></DashboardLayout>
       } />
-
+      <Route path="/help" element={
+        <DashboardLayout><Help /></DashboardLayout>
+      } />
+      <Route path="/documents/:id" element={
+        <DashboardLayout><DocumentPreview /></DashboardLayout>
+      } />
     </Routes>
   );
 }
