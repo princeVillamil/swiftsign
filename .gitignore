@@ -1,0 +1,19 @@
+.bun/
+
+# env files
+.env
+!.env.example
+
+# build output
+dist/
+build/
+
+# uploaded PDFs
+backend/uploads/
+
+# SQLite DB
+*.db
+*.db-shm
+*.db-wal
+
+#
