@@ -31,9 +31,10 @@ const app = new Elysia()
   })
   .use(
     cors({
-      origin: Bun.env.FRONTEND_URL || "http://localhost:5173",
+      origin: true,
       methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
       credentials: true,
+      allowedHeaders: ["Content-Type", "Authorization"],
     })
   )
   .use(
