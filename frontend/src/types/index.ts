@@ -8,14 +8,26 @@ export interface Document {
   signerEmail: string;
   createdAt: string;
   signedAt?: string;
+  expiresAt: string;
 }
 
+// Used on the public signing page
+export interface SigningDocument {
+  id: string;
+  title: string;
+  status: DocumentStatus;
+  signerEmail: string;
+  requesterEmail: string;
+  expiresAt: string;
+}
+
+// Percentage-based coordinates (0–1) relative to page dimensions
 export interface SignaturePlacement {
   page: number;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  xPct: number;
+  yPct: number;
+  widthPct: number;
+  heightPct: number;
 }
 
 export interface UploadDocumentPayload {
@@ -26,7 +38,7 @@ export interface UploadDocumentPayload {
 }
 
 export interface SignDocumentPayload {
-  signatureDataUrl: string;   // base64 PNG from the canvas
+  signatureDataUrl: string;
   signerName: string;
   placements: SignaturePlacement[];
 }

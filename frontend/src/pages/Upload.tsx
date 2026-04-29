@@ -1,185 +1,181 @@
-import { useState, useRef } from "react";
-import { UploadCloud, FileText, X, Info, ArrowRight } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { Upload as UploadIcon, FileText, CheckCircle2 } from "lucide-react";
+import { useUploadDocument } from "@/hooks/useDocuments";
+import { Button } from "@/components/ui/Button";
 
-export default function Upload() {
+const schema = z.object({
+  title: z.string().min(1, "Title is required"),
+  requesterEmail: z.string().email("Invalid email"),
+  signerEmail: z.string().email("Invalid email"),
+  file: z
+    .instanceof(FileList)
+    .refine((f) => f.length > 0, "Please select a PDF")
+    .refine(
+      (f) => f[0]?.type === "application/pdf",
+      "Only PDF files are supported"
+    ),
+});
+
+type FormValues = z.infer<typeof schema>;
+
+export function Upload() {
   const navigate = useNavigate();
-  const inputRef = useRef<HTMLInputElement>(null);
-  
-  // State for drag & drop and form data
-  const [dragActive, setDragActive] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [signerEmail, setSignerEmail] = useState("");
-  const [documentTitle, setDocumentTitle] = useState("");
+  const { mutateAsync, isPending } = useUploadDocument();
 
-  // Handle drag events
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<FormValues>({ resolver: zodResolver(schema) });
+
+  const selectedFile = watch("file");
+
+  async function onSubmit(values: FormValues) {
+    try {
+      await mutateAsync({
+        file: values.file[0],
+        title: values.title,
+        requesterEmail: values.requesterEmail,
+        signerEmail: values.signerEmail,
+      });
+      toast.success("Signing request sent! The signer will receive an email.");
+      navigate("/dashboard");
+    } catch {
+      toast.error("Upload failed. Please try again.");
     }
-  };
-
-  // Handle drop event
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const droppedFile = e.dataTransfer.files[0];
-      if (droppedFile.type === "application/pdf") {
-        setFile(droppedFile);
-        if (!documentTitle) setDocumentTitle(droppedFile.name);
-      } else {
-        alert("Please upload a valid PDF file.");
-      }
-    }
-  };
-
-  // Handle manual file selection
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      setFile(selectedFile);
-      if (!documentTitle) setDocumentTitle(selectedFile.name);
-    }
-  };
-
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!file || !signerEmail) return;
-    
-    // In a real app, you would upload to your Bun backend here.
-    console.log("Uploading payload:", { file, signerEmail, documentTitle });
-    
-    // Navigate to a success or placement screen
-    alert("Document uploaded successfully!");
-    navigate("/documents");
-  };
+  }
 
   return (
-    <div className="max-w-7xl mx-auto w-full p-4 md:p-8">
-      
-      {/* --- HEADER --- */}
+    <div className="mx-auto w-full pb-12">
+      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Add Files</h1>
-        <p className="text-slate-500 mt-1">Upload a PDF to request a signature.</p>
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Request a signature</h1>
+        <p className="text-slate-500 mt-1">
+          Upload a PDF and we'll email the signer a secure link.
+        </p>
       </div>
 
+      {/* Bento Form Card */}
       <div className="bg-white border border-slate-200 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
-        <form onSubmit={handleSubmit}>
-          
-          <div className="p-8 sm:p-10">
-            {/* --- DRAG & DROP ZONE --- */}
-            {!file ? (
-              <div 
-                className={`relative border-2 border-dashed rounded-2xl flex flex-col items-center justify-center p-12 transition-all duration-200 ease-in-out ${
-                  dragActive 
-                    ? "border-blue-500 bg-blue-50" 
-                    : "border-slate-300 bg-slate-50/50 hover:bg-slate-50"
-                }`}
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-              >
-                <input 
-                  ref={inputRef}
-                  type="file" 
-                  accept="application/pdf"
-                  onChange={handleChange}
-                  className="hidden" 
-                />
-                
-                <button 
-                  type="button"
-                  onClick={() => inputRef.current?.click()}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium shadow-sm shadow-blue-600/20 flex items-center gap-2 transition-colors mb-4 z-10"
-                >
-                  <UploadCloud className="w-5 h-5" /> Select PDF File
-                </button>
-                <p className="text-slate-500 font-medium">or drop file here</p>
-                
-                {/* Invisible overlay to catch drag events smoothly */}
-                {dragActive && <div className="absolute inset-0 z-0"></div>}
-              </div>
-            ) : (
-              /* --- FILE SELECTED PREVIEW --- */
-              <div className="border border-slate-200 bg-slate-50 rounded-2xl p-6 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-blue-600">
-                    <FileText className="w-8 h-8" />
+        <form onSubmit={handleSubmit(onSubmit)} className="p-8 sm:p-10 space-y-6">
+
+          {/* File upload (Moved to top for better UX flow, but logic remains exact) */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+              PDF document
+            </label>
+            <label
+              className="flex flex-col items-center justify-center w-full p-10 border-2
+                border-dashed border-slate-300 rounded-2xl cursor-pointer hover:border-blue-400
+                transition-all bg-slate-50/50 hover:bg-blue-50/30 group"
+            >
+              {selectedFile?.[0] ? (
+                <div className="flex items-center gap-3 bg-white border border-slate-200 p-4 rounded-xl shadow-sm w-full max-w-sm">
+                  <div className="bg-blue-50 p-2 rounded-lg text-blue-600">
+                    <FileText size={20} />
                   </div>
-                  <div>
-                    <p className="font-semibold text-slate-900">{file.name}</p>
-                    <p className="text-sm text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB • PDF Document</p>
+                  <div className="flex-1 truncate">
+                    <p className="text-sm font-semibold text-slate-900 truncate">
+                      {selectedFile[0].name}
+                    </p>
+                    <p className="text-xs text-slate-500 font-medium">
+                      {(selectedFile[0].size / 1024 / 1024).toFixed(2)} MB
+                    </p>
                   </div>
+                  <CheckCircle2 size={18} className="text-emerald-500 shrink-0" />
                 </div>
-                <button 
-                  type="button"
-                  onClick={() => setFile(null)}
-                  className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition-colors"
-                  title="Remove file"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+              ) : (
+                <>
+                  <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm mb-4 group-hover:scale-105 transition-transform">
+                    <UploadIcon size={24} className="text-blue-600" />
+                  </div>
+                  <span className="text-sm font-semibold text-slate-700">
+                    Click to select a PDF
+                  </span>
+                  <span className="text-xs text-slate-500 mt-1">
+                    Maximum file size 20 MB
+                  </span>
+                </>
+              )}
+              <input
+                {...register("file")}
+                type="file"
+                accept="application/pdf"
+                className="hidden"
+              />
+            </label>
+            {errors.file && (
+              <p className="mt-2 text-xs font-medium text-rose-600">{errors.file.message as string}</p>
             )}
+          </div>
 
-            {/* --- OPTIONS / FORM DETAILS --- */}
-            <div className="mt-10 border-t border-slate-100 pt-8">
-              <div className="flex items-center gap-2 mb-6">
-                <h2 className="text-lg font-bold text-slate-900">Request Details</h2>
-                <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md ml-auto">
-                  <Info className="w-3.5 h-3.5" /> This will be tracked in your sent folder.
-                </div>
+          <div className="border-t border-slate-100 pt-6 grid grid-cols-1 gap-6">
+            {/* Document title */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+                Document title
+              </label>
+              <input
+                {...register("title")}
+                placeholder="e.g. NDA — Acme Corp"
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder-slate-400
+                  focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all shadow-[0_2px_10px_rgb(0,0,0,0.02)]"
+              />
+              {errors.title && (
+                <p className="mt-2 text-xs font-medium text-rose-600">{errors.title.message}</p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Your email */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Your email
+                </label>
+                <input
+                  {...register("requesterEmail")}
+                  type="email"
+                  placeholder="you@example.com"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder-slate-400
+                    focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all shadow-[0_2px_10px_rgb(0,0,0,0.02)]"
+                />
+                {errors.requesterEmail && (
+                  <p className="mt-2 text-xs font-medium text-rose-600">{errors.requesterEmail.message}</p>
+                )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Document Title</label>
-                  <input 
-                    type="text" 
-                    value={documentTitle}
-                    onChange={(e) => setDocumentTitle(e.target.value)}
-                    placeholder="e.g., Q4 Freelance Contract" 
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all shadow-[0_2px_10px_rgb(0,0,0,0.02)]"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Signer's Email Address</label>
-                  <input 
-                    type="email" 
-                    value={signerEmail}
-                    onChange={(e) => setSignerEmail(e.target.value)}
-                    placeholder="client@company.com" 
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all shadow-[0_2px_10px_rgb(0,0,0,0.02)]"
-                    required
-                  />
-                </div>
+              {/* Signer email */}
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Signer's email
+                </label>
+                <input
+                  {...register("signerEmail")}
+                  type="email"
+                  placeholder="signer@example.com"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder-slate-400
+                    focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all shadow-[0_2px_10px_rgb(0,0,0,0.02)]"
+                />
+                {errors.signerEmail && (
+                  <p className="mt-2 text-xs font-medium text-rose-600">{errors.signerEmail.message}</p>
+                )}
               </div>
             </div>
           </div>
 
-          {/* --- FOOTER ACTIONS --- */}
-          <div className="bg-slate-50 border-t border-slate-200 p-6 sm:px-10 flex items-center justify-between">
-            <Link to="/documents" className="text-slate-500 font-medium hover:text-slate-900 transition-colors">
-              Cancel
-            </Link>
-            <button 
-              type="submit"
-              disabled={!file || !signerEmail}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white px-8 py-3 rounded-xl font-medium shadow-sm shadow-blue-600/20 flex items-center gap-2 transition-all"
+          <div className="pt-4">
+            <Button 
+              type="submit" 
+              loading={isPending} 
+              className="w-full justify-center py-3.5 text-sm font-semibold shadow-[0_4px_14px_0_rgb(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] transition-all"
             >
-              Continue to Placement <ArrowRight className="w-4 h-4" />
-            </button>
+              Send signing request
+            </Button>
           </div>
           
         </form>

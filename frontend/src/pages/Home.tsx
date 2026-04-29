@@ -31,7 +31,7 @@ export default function Home() {
             Upload Document <ArrowRight className="w-5 h-5" />
           </Link>
           <Link 
-            to="/activities" 
+            to="/dashboard" 
             className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 px-8 py-3.5 rounded-full font-medium text-lg transition-all shadow-sm"
           >
             Explore Dashboard
@@ -59,12 +59,26 @@ export default function Home() {
             {/* Minimalist Mockup Graphic inside the card */}
             <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col gap-3">
               {[
-                { name: "Freelance_Contract_V2.pdf", status: "Waiting for you", color: "text-amber-600", bg: "bg-amber-50" },
-                { name: "NDA_Partnership_Final.docx", status: "Completed", color: "text-emerald-600", bg: "bg-emerald-50" }
+                { name: "Freelance_Contract_V2.pdf", status: "pending" },
+                { name: "NDA_Partnership_Final.pdf", status: "signed" }
               ].map((doc, i) => (
-                <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 group-hover:bg-white transition-colors">
-                  <span className="font-medium text-slate-700">{doc.name}</span>
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${doc.color} ${doc.bg}`}>
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 group-hover:bg-white transition-colors"
+                >
+                  <span className="font-medium text-slate-700">
+                    {doc.name}
+                  </span>
+
+                  <span
+                    className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
+                      doc.status === "pending"
+                        ? "text-amber-700 bg-amber-50 border-amber-200"
+                        : doc.status === "signed"
+                        ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                        : ""
+                    }`}
+                  >
                     {doc.status}
                   </span>
                 </div>

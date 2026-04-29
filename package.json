@@ -6,7 +6,9 @@
     "dev": "concurrently \"bun run dev:backend\" \"bun run dev:frontend\"",
     "dev:backend": "cd backend && bun run dev",
     "dev:frontend": "cd frontend && bun run dev",
-    "test": "cd backend && bun test",
+    "test": "bun run test:backend && bun run test:frontend",
+    "test:backend": "cd backend && bun test",
+    "test:frontend": "cd frontend && bun run test",
     "build": "cd frontend && bun run build"
   }
 }

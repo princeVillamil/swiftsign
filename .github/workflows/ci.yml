@@ -24,7 +24,26 @@ jobs:
 
       - name: Run tests
         working-directory: backend
-        run: bun test --coverage
+        run: bun test
+
+  test-frontend:
+    name: Frontend Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install deps
+        working-directory: frontend
+        run: bun install
+
+      - name: Run tests
+        working-directory: frontend
+        run: bun run test
 
   lint-frontend:
     name: Frontend Type Check + Lint
@@ -39,11 +58,11 @@ jobs:
 
       - name: Install deps
         working-directory: frontend
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: Type check
         working-directory: frontend
-        run: bun run tsc --noEmit
+        run: bun run build
 
       - name: Lint
         working-directory: frontend
