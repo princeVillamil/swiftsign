@@ -1,0 +1,23 @@
+{
+  "name": "swiftsign-backend",
+  "version": "1.0.50",
+  "private": true,
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@elysiajs/cors": "^1.3.2",
+    "@elysiajs/static": "^1.1.1",
+    "@elysiajs/swagger": "^1.3.1",
+    "elysia": "^1.3.2",
+    "nodemailer": "^6.9.14",
+    "pdf-lib": "^1.17.1"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "@types/nodemailer": "^6.4.15"
+  },
+  "module": "src/index.js"
+}
