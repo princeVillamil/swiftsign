@@ -48,8 +48,8 @@ export async function sendSigningRequest({
   requesterEmail: string;
   signingToken: string;
 }) {
-  const frontendUrl = Bun.env.FRONTEND_URL ?? "http://localhost:5173";
-  const signingUrl = `${frontendUrl}/sign/${signingToken}`;
+  const frontendUrl = Bun.env.FRONTEND_URL || "http://localhost:5173";
+  const signingUrl = `${frontendUrl.replace(/\/$/, "")}/sign/${signingToken}`;
 
   await sendMail({
     to,
@@ -85,8 +85,8 @@ export async function sendSignedNotification({
   signerEmail: string;
   documentId: string;
 }) {
-  const frontendUrl = Bun.env.FRONTEND_URL ?? "http://localhost:5173";
-  const downloadUrl = `${frontendUrl}/dashboard`;
+  const frontendUrl = Bun.env.FRONTEND_URL || "http://localhost:5173";
+  const downloadUrl = `${frontendUrl.replace(/\/$/, "")}/dashboard`;
 
   await sendMail({
     to,
