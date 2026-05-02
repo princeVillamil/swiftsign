@@ -2,6 +2,12 @@
 
 SwiftSign is a specialized e-signature platform built to provide a lightweight, high-performance alternative to enterprise signing solutions. The project leverages the Bun ecosystem to achieve sub-millisecond execution times on the backend and a modern, reactive interface on the frontend.
 
+## Live Demo
+
+You can access the deployed application here:
+
+- **Live App**: https://swiftsign-frontend.vercel.app/
+
 ## Architecture and System Design
 
 The application follows a decoupled client-server architecture, organized as a unified workspace for simplified development and deployment.
